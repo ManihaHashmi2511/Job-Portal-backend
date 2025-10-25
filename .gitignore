@@ -1,0 +1,5 @@
+# Dependency folder
+node_modules/
+
+# Local Environment Variables (CRUCIAL: NEVER commit your production secrets!)
+.env
