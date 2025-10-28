@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // to parse URL-encoded bodies
 app.use(cors({
-  origin: "http://localhost:5173", // your frontend URL
+  origin: "job-portal-frontend-seven-jet.vercel.app", // your frontend URL
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
