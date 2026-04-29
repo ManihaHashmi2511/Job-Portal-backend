@@ -1,0 +1,2 @@
+- [x] Fix registerCompany in Company.Controller.js: change req.id to req.user._id
+- [x] Fix getCompany in Company.Controller.js: change req.id to req.user._id
