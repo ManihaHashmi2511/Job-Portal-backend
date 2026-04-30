@@ -47,5 +47,9 @@ app.use('/api/applications', applicationRouter); //http://localhost:8000/api/app
 
 connectDB();
 
+// app.listen(process.env.PORT || 5000, () => {
+//   console.log(`Server running on port ${process.env.PORT || 5000}`);
+// });
+
 module.exports = app;
 //  module.exports.handler = serverLess(app);
