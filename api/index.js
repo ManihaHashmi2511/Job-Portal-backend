@@ -16,7 +16,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // to parse URL-encoded bodies
 app.use(cors(
   {
-    origin: "https://job-portal-frontend-x2ke.vercel.app/",
+    origin: "https://job-portal-frontend-rcoe.vercel.app/",
+    credentials: true
   }
 ));
 app.use(cookieParser());
