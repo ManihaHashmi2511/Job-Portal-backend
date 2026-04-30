@@ -1,10 +1,9 @@
-const User = require('../Models/User.model');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const cloudinary = require('../cloudinary');
-const getDataUri = require('../datauri');
-require('dotenv').config();
-
+const User = require("../Models/User.model");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cloudinary = require("../cloudinary");
+const getDataUri = require("../datauri");
+require("dotenv").config();
 
 const register = async (req, res) => {
   const { fullName, email, password, phoneNumber, role } = req.body;
@@ -18,8 +17,6 @@ const register = async (req, res) => {
   }
   const fileUri = getDataUri(file);
   const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-  
-
 
   let user = await User.findOne({ email });
   if (user) {
@@ -34,9 +31,9 @@ const register = async (req, res) => {
     password: hashedPassword,
     phoneNumber,
     role,
-    profile:{
-      profilePicture: cloudResponse.secure_url
-    }
+    profile: {
+      profilePicture: cloudResponse.secure_url,
+    },
   });
 
   return res.status(201).json({
@@ -70,7 +67,9 @@ const login = async (req, res) => {
     const tokenData = {
       userId: user._id,
     };
-    const token = jwt.sign(tokenData, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(tokenData, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     user = {
       _id: user._id,
@@ -85,7 +84,8 @@ const login = async (req, res) => {
       .cookie("token", token, {
         maxAge: 1 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        sameSite: "lax",
+        secure: true, // 🔥 REQUIRED on Vercel (HTTPS)
+        sameSite: "none", // 🔥 REQUIRED for cross-origin
       })
       .json({
         message: ` Welome back ${user.fullName}`,
@@ -95,33 +95,33 @@ const login = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-};   
+};
 
 const logout = (req, res) => {
   try {
     // ✅ Prevent caching of logout response
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
 
     // ✅ Clear the authentication cookie
-    return res.status(200)
+    return res
+      .status(200)
       .cookie("token", "", {
         maxAge: 0,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: "lax"
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
       })
       .json({
         message: "Logged out successfully",
-        success: true
+        success: true,
       });
-
   } catch (error) {
     console.error("Logout error:", error);
     return res.status(500).json({
       message: "Internal server error",
-      success: false
+      success: false,
     });
   }
 };
@@ -148,14 +148,13 @@ const getProfile = async (req, res) => {
 
     return res.status(200).json({
       user: userProfile,
-      success: true
+      success: true,
     });
-
   } catch (error) {
     console.error("Get profile error:", error);
     return res.status(500).json({
       message: "Internal server error",
-      success: false
+      success: false,
     });
   }
 };
@@ -173,7 +172,7 @@ const updateProfile = async (req, res) => {
     }
 
     // ✅ Get data from req.body (not req.file for text fields)
-    const {fullName, email, phoneNumber, bio, skills} = req.body;
+    const { fullName, email, phoneNumber, bio, skills } = req.body;
     const file = req.file; // ✅ Correct: get file from multer
 
     // ✅ Only process file if it exists and has buffer
@@ -181,38 +180,46 @@ const updateProfile = async (req, res) => {
     if (file && file.buffer) {
       try {
         const fileUri = getDataUri(file);
-        cloudResponse = await cloudinary.uploader.upload(fileUri.content, { resource_type: 'raw' });
+        cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+          resource_type: "raw",
+        });
       } catch (error) {
         console.error("File upload error:", error);
         return res.status(500).json({
           message: "File upload failed",
-          success: false
+          success: false,
         });
       }
     } else if (file && !file.buffer) {
       console.error("File buffer is missing:", file);
       return res.status(400).json({
         message: "Invalid file upload - no file buffer found",
-        success: false
+        success: false,
       });
     }
 
     let skillsArray;
-    if(skills){
+    if (skills) {
       // ✅ Better parsing: trim whitespace and handle empty strings
-      skillsArray = skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+      skillsArray = skills
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter((skill) => skill.length > 0);
     }
 
     // ✅ Update user profile
-    if(fullName) user.fullName = fullName;
-    if(email) user.email = email;
-    if(phoneNumber) user.phoneNumber = phoneNumber;
-    if(bio) user.profile.bio = bio;
-    if(skills) user.profile.skills = skillsArray;
+    if (fullName) user.fullName = fullName;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+    if (bio) user.profile.bio = bio;
+    if (skills) user.profile.skills = skillsArray;
 
     // ✅ Only update resume if file was uploaded successfully
-    if(cloudResponse){
-      user.profile.resume = cloudResponse.secure_url.replace('/image/', '/raw/');
+    if (cloudResponse) {
+      user.profile.resume = cloudResponse.secure_url.replace(
+        "/image/",
+        "/raw/",
+      );
       user.profile.resumeOriginalName = file.originalname;
     }
 
@@ -232,14 +239,13 @@ const updateProfile = async (req, res) => {
     return res.status(200).json({
       message: "Profile updated successfully",
       user: updatedUser,
-      success: true
+      success: true,
     });
-
   } catch (error) {
     console.error("Profile update error:", error);
     return res.status(500).json({
       message: "Internal server error",
-      success: false
+      success: false,
     });
   }
 };
@@ -249,5 +255,5 @@ module.exports = {
   login,
   logout,
   getProfile,
-  updateProfile
+  updateProfile,
 };
