@@ -110,8 +110,9 @@ const logout = (req, res) => {
       .cookie("token", "", {
         maxAge: 0,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true, // 🔥 REQUIRED on Vercel (HTTPS)
+        sameSite: "none", // 🔥 REQUIRED for cross-origin
+        expires: new Date(0), // 🔥 immediately expire cookie
       })
       .json({
         message: "Logged out successfully",
