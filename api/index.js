@@ -14,7 +14,11 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // to parse URL-encoded bodies
-app.use(cors());
+app.use(cors(
+  {
+    origin: "https://job-portal-frontend-x2ke.vercel.app/",
+  }
+));
 app.use(cookieParser());
 // to parse cookies
 
